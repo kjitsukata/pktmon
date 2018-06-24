@@ -1,0 +1,32 @@
+#!/bin/bash
+
+usage() {
+    echo "Usage: $0 [-i interface]"
+    exit 1
+}
+
+while getopts "i:h" opt
+do
+    case $opt in
+        i)  interface=$OPTARG
+            ;;
+        h)  usage
+            ;;
+    esac
+done
+
+printf "%21s %9s %8s %8s %9s\n" '--------time---------' '---i/f---' '---tx---' '---rx---' '---total---'
+
+while true
+do
+    tpkt_pre=`cat /sys/class/net/${interface}/statistics/tx_packets`
+    rpkt_pre=`cat /sys/class/net/${interface}/statistics/rx_packets`
+    sleep 1
+    tpkt_curt=`cat /sys/class/net/${interface}/statistics/tx_packets`
+    rpkt_curt=`cat /sys/class/net/${interface}/statistics/rx_packets`
+    tpkt=`expr ${tpkt_curt} - ${tpkt_pre}`
+    rpkt=`expr ${rpkt_curt} - ${rpkt_pre}`
+    total=`expr ${tpkt} + ${rpkt}`
+    printf "%21s|%9s|%8d|%8d|%9d\n" `date +'%Y-%m-%d%Z%H:%M:%S'` ${interface} ${tpkt} ${rpkt} ${total}
+done
+
